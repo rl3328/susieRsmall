@@ -224,7 +224,7 @@ susie_get_posterior_samples = function (susie_fit, num_samples) {
 #' @param X n by p matrix of values of the p variables (covariates) in
 #'   n samples. When provided, correlation between variables will be
 #'   computed and used to remove CSs whose minimum correlation among
-#'   variables is smaller than \code{min_abs_corr} (or \code{median_abs_corr}).
+#'   variables is smaller than \code{min_abs_corr}.
 #'
 #' @param Xcorr p by p matrix of correlations between variables
 #'   (covariates). When provided, it will be used to remove CSs whose
@@ -236,14 +236,7 @@ susie_get_posterior_samples = function (susie_fit, num_samples) {
 #'
 #' @param min_abs_corr A "purity" threshold for the CS. Any CS that
 #'   contains a pair of variables with correlation less than this
-#'   threshold will be filtered out and not reported. Default set to 0.5.
-#' 
-#' @param median_abs_corr An alternative "purity" threshold for the CS. Median
-#'   correlation between pairs of variables in a CS less than this
-#'   threshold will be filtered out and not reported. When both min_abs_corr 
-#'   and median_abs_corr are set, a CS will only be removed if it fails both 
-#'   filters. Default set to NULL to be compatible with Wang et al (2020) JRSS-B 
-#'   but it is recommended to set it to 0.8 in practice. 
+#'   threshold will be filtered out and not reported.
 #'
 #' @param dedup If \code{dedup = TRUE}, remove duplicate CSs.
 #'
@@ -267,8 +260,8 @@ susie_get_posterior_samples = function (susie_fit, num_samples) {
 #' @export
 #'
 susie_get_cs = function (res, X = NULL, Xcorr = NULL, coverage = 0.95,
-                         min_abs_corr = 0.5, median_abs_corr = NULL, 
-                         dedup = TRUE, check_symmetric = TRUE, n_purity = 100, use_rfast) {
+                         min_abs_corr = 0.5, dedup = TRUE, squared = FALSE,
+                         check_symmetric = TRUE, n_purity = 100, use_rfast) {
   if (!is.null(X) && !is.null(Xcorr))
     stop("Only one of X or Xcorr should be specified")
   if (check_symmetric) {
@@ -324,11 +317,12 @@ susie_get_cs = function (res, X = NULL, Xcorr = NULL, coverage = 0.95,
             matrix(get_purity(cs[[i]],X,Xcorr,squared,n_purity,use_rfast),1,3))
     }
     purity = as.data.frame(purity)
-    colnames(purity) = c("min.abs.corr","mean.abs.corr","median.abs.corr")
-    if (is.null(median_abs_corr)) 
-      is_pure = which(purity[,1] >= min_abs_corr)
+    if (squared)
+      colnames(purity) = c("min.sq.corr","mean.sq.corr","median.sq.corr")
     else
-      is_pure = which(purity[,1] >= min_abs_corr | purity[,3] >= median_abs_corr)
+      colnames(purity) = c("min.abs.corr","mean.abs.corr","median.abs.corr")
+    threshold = ifelse(squared,min_abs_corr^2,min_abs_corr)
+    is_pure = which(purity[,1] >= threshold)
     if (length(is_pure) > 0) {
       cs        = cs[is_pure]
       purity    = purity[is_pure,]
@@ -360,10 +354,12 @@ susie_get_cs = function (res, X = NULL, Xcorr = NULL, coverage = 0.95,
 #' @param X n by p matrix of values of the p variables (covariates) in
 #'   n samples. When provided, correlation between variables will be
 #'   computed and used to remove CSs whose minimum correlation among
-#'   variables is smaller than \code{min_abs_corr} (or \code{median_abs_corr}).
+#'   variables is smaller than \code{min_abs_corr}.
 #'
 #' @param Xcorr p by p matrix of correlations between variables
-#'   (covariates).
+#'   (covariates). When provided, it will be used to remove CSs whose
+#'   minimum correlation among variables is smaller than
+#'   \code{min_abs_corr}.
 #'
 #' @param max When \code{max = FAFLSE}, return a matrix of CS
 #'   correlations. When \code{max = TRUE}, return only the maximum
@@ -607,83 +603,6 @@ susie_prune_single_effects = function (s,L = 0,V = NULL) {
   }
   s$sets = NULL
   return(s)
-}
-
-#' Obtain Credible Sets with Attainable Coverage and Entropy Filtering
-#'
-#' @description This function computes credible sets (CSs) from a fitted SuSiE model,
-#'   filtering out CSs that do not meet the specified coverage and entropy thresholds.
-#'   It returns the CSs, their coverage, and the requested coverage.
-#'
-#' @param res A susie fit, typically an output from \code{\link{susie}} or one of its variants.
-#'
-#' @param coverage A number between 0 and 1 specifying the desired coverage of each CS. Default is 0.95.
-#'
-#' @param ethres The entropy threshold. CSs with entropy values greater than or equal to \code{log(ethres)}
-#'   will be filtered out. Default is 20.
-#'
-#' @param ... Additional arguments to be passed to \code{\link{susie_get_cs}}.
-#'
-#' @return A list with the following elements:
-#'   \describe{
-#'     \item{cs}{A list in which each element is a vector containing the indices of the variables in the CS.}
-#'     \item{coverage}{The coverage of each CS.}
-#'     \item{requested_coverage}{The requested coverage specified by the \code{coverage} argument.}
-#'   }
-#'
-#' @details The function performs the following steps:
-#'   \enumerate{
-#'     \item Computes the attainable coverage by selecting the maximum value in each column of \code{res$alpha}.
-#'     \item Calculates the coverage attained by summing the attainable coverage values for each row.
-#'     \item Calculates the entropy of each row in the attainable coverage matrix using the \code{entropy} function.
-#'     \item Filters the rows based on the conditions: coverage attained > \code{coverage} and entropy < \code{log(ethres)}.
-#'     \item If no rows satisfy the conditions, it returns a list with \code{cs = NULL}, \code{coverage = NULL},
-#'           and \code{requested_coverage = coverage}.
-#'     \item If rows satisfy the conditions, it creates a filtered version of the \code{res} object with only the selected rows.
-#'     \item Calls \code{susie_get_cs} with the filtered \code{res} object and the desired \code{coverage},
-#'           along with any additional arguments passed through \code{...}.
-#'   }
-#'
-#' @seealso \code{\link{susie_get_cs}} for obtaining credible sets without attainable coverage and entropy filtering.
-#'
-#' @examples
-#' \dontrun{
-#' # Fit a SuSiE model
-#' s <- susie(X, y, L = 10)
-#'
-#' # Obtain credible sets with attainable coverage and entropy filtering
-#' cs_attainable <- susie_get_cs_attainable(s, coverage = 0.9, ethres = 15)
-#' }
-#'
-#' @export
-susie_get_cs_attainable <- function(res, coverage = 0.95, ethres = 20, ...) {
-
-  # Get attainable coverage
-  alpha_attainable <- do.call(cbind, apply(res$alpha, 2, function(x) ifelse(x == max(x), x, 0), simplify = FALSE))
-
-  # Calculate the coverage attained
-  coverage_attained <- rowSums(alpha_attainable)
-
-  # Calculate the entropy of each row in alpha_attainable
-  entropy_vals <- apply(alpha_attainable, 1, entropy)
-
-  # Filter the rows based on the conditions
-  keep_effects <- which(coverage_attained > coverage & entropy_vals < log(ethres))
-
-  if (length(keep_effects) == 0) {
-    return(list(cs = NULL, coverage = NULL, requested_coverage = coverage))
-  }
-
-  res_filtered <- res
-  res_filtered$alpha <- res$alpha[keep_effects, , drop = FALSE]
-  res_filtered$V <- res$V[keep_effects]
-
-  # Set X and Xcorr to NULL if they are passed in ...
-  dot_args <- list(...)
-  if (!is.null(dot_args$X)) dot_args$X <- NULL
-  if (!is.null(dot_args$Xcorr)) dot_args$Xcorr <- NULL
-
-  return(do.call(susie_get_cs, c(list(res_filtered, coverage = coverage), dot_args)))
 }
 
 #' @title Estimate s in \code{susie_rss} Model Using Regularized LD

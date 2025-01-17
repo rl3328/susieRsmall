@@ -165,13 +165,7 @@
 #'   credible set. The default, 0.5, corresponds to a squared
 #'   correlation of 0.25, which is a commonly used threshold for
 #'   genotype data in genetic studies.
-#' 
-#' @param median_abs_corr An alternative "purity" threshold for the CS. Median
-#'   correlation between pairs of variables in a CS less than this
-#'   threshold will be filtered out and not reported. When both min_abs_corr 
-#'   and median_abs_corr are set, a CS will only be removed if it fails both 
-#'   filters. Default set to NULL to be compatible with Wang et al (2020) JRSS-B 
-#'   but it is recommended to set it to 0.8 in practice. 
+#'
 #' @param compute_univariate_zscore If \code{compute_univariate_zscore
 #'   = TRUE}, the univariate regression z-scores are outputted for each
 #'   variable.
@@ -320,7 +314,6 @@ susie = function (X,y,L = min(10,ncol(X)),
                    s_init = NULL,
                    coverage = 0.95,
                    min_abs_corr = 0.5,
-                   median_abs_corr = NULL,
                    compute_univariate_zscore = FALSE,
                    na.rm = FALSE,
                    max_iter = 100,
@@ -481,7 +474,6 @@ susie = function (X,y,L = min(10,ncol(X)),
   if (!is.null(coverage) && !is.null(min_abs_corr)) {
     s$sets = susie_get_cs(s,coverage = coverage,X = X,
                           min_abs_corr = min_abs_corr,
-                          median_abs_corr = median_abs_corr,
                           n_purity = n_purity)
     s$pip = susie_get_pip(s,prune_by_cs = FALSE,prior_tol = prior_tol)
   }
@@ -525,11 +517,10 @@ susie = function (X,y,L = min(10,ncol(X)),
         ## if null_weight is specified, and the extra 0 column is not
         ## removed from compute_univariate_zscore, we remove it here
         X = X[,1:(ncol(X) - 1)]
-    } else {
+    } else
       pw_s = s$pi
-    }
-    resume = TRUE
-    while (resume & length(s$sets$cs)>0) {
+    conti = TRUE
+    while (conti & length(s$sets$cs)>0) {
       m = list()
       for(cs in 1:length(s$sets$cs)){
         pw_cs = pw_s
@@ -548,8 +539,7 @@ susie = function (X,y,L = min(10,ncol(X)),
             prior_tol = prior_tol,coverage = coverage,
             residual_variance_upperbound = residual_variance_upperbound,
             min_abs_corr = min_abs_corr,
-            median_abs_corr = median_abs_corr,
-            compute_univariate_zscore = FALSE,
+            compute_univariate_zscore = compute_univariate_zscore,
             na.rm = na.rm,max_iter = max_iter,tol = tol,verbose = FALSE,
             track_fit = FALSE,residual_variance_lowerbound = var(drop(y))/1e4,
             refine = FALSE)
@@ -566,19 +556,18 @@ susie = function (X,y,L = min(10,ncol(X)),
             prior_tol = prior_tol,coverage = coverage,
             residual_variance_upperbound = residual_variance_upperbound,
             min_abs_corr = min_abs_corr,
-            median_abs_corr = median_abs_corr,
-            compute_univariate_zscore = FALSE,
+            compute_univariate_zscore = compute_univariate_zscore,
             na.rm = na.rm,max_iter = max_iter,tol = tol,verbose = FALSE,
             track_fit = FALSE,residual_variance_lowerbound = var(drop(y))/1e4,
             refine = FALSE)
         m = c(m,list(s3))
       }
       if(length(m) == 0){
-        resume = FALSE
+        conti = FALSE
       }else{
         elbo = sapply(m,function(x) susie_get_objective(x))
         if ((max(elbo) - susie_get_objective(s)) <= 0)
-          resume = FALSE
+          conti = FALSE
         else
           s = m[[which.max(elbo)]]
       }

@@ -13,12 +13,10 @@ get_cs_correlation(model, X = NULL, Xcorr = NULL, max = FALSE)
 \item{X}{n by p matrix of values of the p variables (covariates) in
 n samples. When provided, correlation between variables will be
 computed and used to remove CSs whose minimum correlation among
-variables is smaller than \code{min_abs_corr}.}
+variables is smaller than \code{min_abs_corr} (or \code{median_abs_corr}).}
 
 \item{Xcorr}{p by p matrix of correlations between variables
-(covariates). When provided, it will be used to remove CSs whose
-minimum correlation among variables is smaller than
-\code{min_abs_corr}.}
+(covariates).}
 
 \item{max}{When \code{max = FAFLSE}, return a matrix of CS
 correlations. When \code{max = TRUE}, return only the maximum
