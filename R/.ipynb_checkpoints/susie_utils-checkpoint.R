@@ -321,7 +321,7 @@ susie_get_cs = function (res, X = NULL, Xcorr = NULL, coverage = 0.95,
       else
         purity =
           rbind(purity,
-            matrix(get_purity(cs[[i]],X,Xcorr,n_purity,use_rfast),1,3))
+            matrix(get_purity(cs[[i]],X,Xcorr,squared,n_purity,use_rfast),1,3))
     }
     purity = as.data.frame(purity)
     colnames(purity) = c("min.abs.corr","mean.abs.corr","median.abs.corr")
@@ -480,7 +480,7 @@ n_in_CS = function(res, coverage = 0.9) {
 # Subsample and compute min, mean, median and max abs corr.
 #
 #' @importFrom stats median
-get_purity = function (pos, X, Xcorr, n = 100,
+get_purity = function (pos, X, Xcorr, squared = FALSE, n = 100,
                        use_rfast) {
   if (missing(use_rfast))
     use_rfast = requireNamespace("Rfast",quietly = TRUE)
@@ -505,6 +505,8 @@ get_purity = function (pos, X, Xcorr, n = 100,
       value = abs(get_upper_tri(muffled_corr(X_sub)))
     } else
       value = abs(get_upper_tri(Xcorr[pos,pos]))
+    if (squared)
+      value = value^2
     return(c(min(value),
              sum(value)/length(value),
              get_median(value)))
