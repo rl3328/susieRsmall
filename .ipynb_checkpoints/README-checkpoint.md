@@ -14,7 +14,7 @@ from GitHub:
 
 ```R
 # install.packages("remotes")
-remotes::install_github("rl3328/susieRsmall")
-library(susieR)
+remotes::install_github("william-denault/susieRsmall")
+library(susieRsmall)
 ```
  
