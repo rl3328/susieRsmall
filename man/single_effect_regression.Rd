@@ -14,7 +14,9 @@ single_effect_regression(
   residual_variance = 1,
   prior_weights = NULL,
   optimize_V = c("none", "optim", "uniroot", "EM", "simple"),
-  check_null_threshold = 0
+  check_null_threshold = 0,
+  alpha = 0,
+  beta = 0
 )
 
 single_effect_regression_rss(
@@ -51,8 +53,14 @@ single_effect_regression_ss(
 prior variance.}
 
 \item{check_null_threshold}{Scalar specifying threshold on the
-log-scale to compare likelihood between current estimate and zero
-the null.}
+  log-scale to compare likelihood between current estimate and zero
+  the null.
+
+ @param alpha  numerical parameter for the NIG prior when using Servin
+ and Stephens SER
+
+ @param beta  numerical parameter for the NIG prior when using Servin
+ and Stephens SER}
 
 \item{z}{A p-vector of z scores.}
 

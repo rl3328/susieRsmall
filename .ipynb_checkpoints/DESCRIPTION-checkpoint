@@ -1,6 +1,6 @@
 Encoding: UTF-8
 Type: Package
-Package: susieR
+Package: susieRsmall
 Title: Sum of Single Effects Linear Regression
 Description: Implements methods for variable selection in linear
     regression based on the "Sum of Single Effects" (SuSiE) model, as
@@ -15,8 +15,8 @@ Description: Implements methods for variable selection in linear
     called "Iterative Bayesian Stepwise Selection" (IBSS), is simple
     and fast, allowing the SuSiE model be fit to large data sets
     (thousands of samples and hundreds of thousands of variables).
-Date: 2025-1-21
-Version: 0.12.43
+Date: 2023-10-04
+Version: 0.12.42
 Authors@R: c(person("Gao","Wang",role="aut",email="wang.gao@columbia.edu"),
              person("Yuxin","Zou",role="aut"),
              person("Kaiqian","Zhang",role="aut"),
@@ -47,5 +47,5 @@ Suggests:
 LazyData: yes
 LazyDataCompression: xz
 NeedsCompilation: no
-RoxygenNote: 7.3.2
+RoxygenNote: 7.2.3
 VignetteBuilder: knitr

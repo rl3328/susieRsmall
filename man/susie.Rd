@@ -24,6 +24,7 @@ susie(
   s_init = NULL,
   coverage = 0.95,
   min_abs_corr = 0.5,
+  median_abs_corr = NULL,
   compute_univariate_zscore = FALSE,
   na.rm = FALSE,
   max_iter = 100,
@@ -32,7 +33,9 @@ susie(
   track_fit = FALSE,
   residual_variance_lowerbound = var(drop(y))/10000,
   refine = FALSE,
-  n_purity = 100
+  n_purity = 100,
+  alpha = 0,
+  beta = 0
 )
 
 susie_suff_stat(
@@ -60,6 +63,7 @@ susie_suff_stat(
   s_init = NULL,
   coverage = 0.95,
   min_abs_corr = 0.5,
+  median_abs_corr = NULL,
   tol = 0.001,
   verbose = FALSE,
   track_fit = FALSE,
@@ -134,7 +138,8 @@ value supplied to \code{scaled_prior_variance}.}
 variance. When \code{estimate_prior_method = "simple"} is used, the
 likelihood at the specified prior variance is compared to the
 likelihood at a variance of zero, and the setting with the larger
-likelihood is retained.}
+likelihood is retained. Use option "EM" when using SuSiE with Servin and Stephens
+SER}
 
 \item{check_null_threshold}{When the prior variance is estimated,
 compare the estimate with the null, and set the prior variance to
@@ -163,6 +168,13 @@ residual variance. It is only relevant when
 credible set. The default, 0.5, corresponds to a squared
 correlation of 0.25, which is a commonly used threshold for
 genotype data in genetic studies.}
+
+\item{median_abs_corr}{An alternative "purity" threshold for the CS. Median
+correlation between pairs of variables in a CS less than this
+threshold will be filtered out and not reported. When both min_abs_corr 
+and median_abs_corr are set, a CS will only be removed if it fails both 
+filters. Default set to NULL to be compatible with Wang et al (2020) JRSS-B 
+but it is recommended to set it to 0.8 in practice.}
 
 \item{compute_univariate_zscore}{If \code{compute_univariate_zscore
 = TRUE}, the univariate regression z-scores are outputted for each

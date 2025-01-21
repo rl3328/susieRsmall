@@ -58,7 +58,7 @@ susie_suff_stat = function (XtX, Xty, yty, n,
                             r_tol = 1e-08, prior_weights = NULL,
                             null_weight = 0, standardize = TRUE,
                             max_iter = 100, s_init = NULL, coverage = 0.95,
-                            min_abs_corr = 0.5, tol = 1e-3,
+                            min_abs_corr = 0.5, median_abs_corr = NULL, tol = 1e-3,
                             verbose = FALSE, track_fit = FALSE,
                             check_input = FALSE, refine = FALSE,
                             check_prior = FALSE, n_purity = 100, ...) {
@@ -277,11 +277,13 @@ susie_suff_stat = function (XtX, Xty, yty, n,
     if(any(!(diag(XtX) %in% c(0,1)))){
       s$sets = susie_get_cs(s,coverage = coverage,Xcorr = muffled_cov2cor(XtX),
                             min_abs_corr = min_abs_corr,
+                            median_abs_corr = median_abs_corr,
                             check_symmetric = FALSE,
                             n_purity = n_purity)
     }else
       s$sets = susie_get_cs(s,coverage = coverage,Xcorr = XtX,
                             min_abs_corr = min_abs_corr,
+                            median_abs_corr = median_abs_corr,
                             check_symmetric = FALSE,
                             n_purity = n_purity)
     s$pip = susie_get_pip(s,prune_by_cs = FALSE,prior_tol = prior_tol)
@@ -331,7 +333,7 @@ susie_suff_stat = function (XtX, Xty, yty, n,
             check_null_threshold = check_null_threshold, prior_tol = prior_tol,
             r_tol = r_tol, max_iter = max_iter,
             null_weight = null_weight, standardize = standardize,
-            coverage = coverage, min_abs_corr = min_abs_corr, tol = tol,
+            coverage = coverage, min_abs_corr = min_abs_corr, median_abs_corr = median_abs_corr, tol = tol,
             verbose = FALSE, track_fit = FALSE, check_input = FALSE,
             refine = FALSE)
         sinit2 = s2[c("alpha","mu","mu2")]
@@ -347,7 +349,7 @@ susie_suff_stat = function (XtX, Xty, yty, n,
             check_null_threshold = check_null_threshold, prior_tol = prior_tol,
             r_tol = r_tol, max_iter = max_iter, null_weight = null_weight,
             standardize = standardize, coverage = coverage,
-            min_abs_corr = min_abs_corr, tol = tol, verbose = FALSE,
+            min_abs_corr = min_abs_corr, median_abs_corr = median_abs_corr, tol = tol, verbose = FALSE,
             track_fit = FALSE, check_input = FALSE, refine = FALSE)
         m = c(m,list(s3))
       }
