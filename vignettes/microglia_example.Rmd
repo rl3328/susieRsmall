@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r cars}
 rm(list=ls())
 
-small_data <- readRDS("C:/Users/WD/Downloads/MiGA_eQTL.chr2_ENSG00000151694.univariate_data.rds")
+small_data <- readRDS("../data/MiGA_eQTL.chr2_ENSG00000151694.univariate_data.rds")
 
 y= small_data$ENSG00000151694$residual_Y[[3]]
 X= small_data$ENSG00000151694$residual_X[[3]]
