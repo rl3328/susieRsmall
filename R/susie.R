@@ -436,7 +436,7 @@ susie = function (X,y,L = min(10,ncol(X)),
                            check_null_threshold,
                            alpha=alpha,
                            beta=beta)
-print(s$V)
+
 
      if (verbose)
       print(paste0("objective:",get_objective(X,y,s)))
