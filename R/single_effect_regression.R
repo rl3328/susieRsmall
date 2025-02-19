@@ -178,7 +178,7 @@ single_effect_regression =
     loglik = lbf_model + sum(dnorm(y,0,sqrt(residual_variance),log = TRUE))
 #browser()
     if(optimize_V == "EM"){
-
+      print("method=EM")
       V =  sqrt(sum(alpha * (betahat^2 + ( beta_1/(nrow(X)-2))* shat2 ))) #optimize_prior_variance(optimize_V,betahat,shat2,prior_weights,
                                #   alpha,post_mean2,
                                 #  check_null_threshold = check_null_threshold)
