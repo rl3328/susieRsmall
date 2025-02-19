@@ -436,7 +436,7 @@ susie = function (X,y,L = min(10,ncol(X)),
                            check_null_threshold,
                            alpha=alpha,
                            beta=beta)
-
+print(s$V)
 
      if (verbose)
       print(paste0("objective:",get_objective(X,y,s)))
@@ -522,6 +522,7 @@ susie = function (X,y,L = min(10,ncol(X)),
   s$X_column_scale_factors = attr(X,"scaled:scale")
 
   if (refine) {
+    print("refine=T")
     if (!missing(s_init) && !is.null(s_init))
       warning("The given s_init is not used in refinement")
     if (!is.null(null_weight) && null_weight != 0) {
